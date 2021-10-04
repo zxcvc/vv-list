@@ -124,7 +124,6 @@ export default defineComponent({
         style={{ height: `${props.height * props.show_nums}px` }}
         ref={container}
         onScroll={withModifiers(scroll_handler, ["passive", "once"])}
-        onClick={withModifiers(() => console.log(222), ["self"])}
       >
         <div
           class="wrapper"
