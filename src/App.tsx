@@ -28,7 +28,11 @@ export default defineComponent({
           >
             {{
               default(item: Item) {
-                return <div class="item">{item.id}----{item.text}</div>;
+                return (
+                  <div class="item">
+                    {item.id}----{item.text}
+                  </div>
+                );
               },
             }}
           </VList>
