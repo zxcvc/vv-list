@@ -2,17 +2,15 @@ import {
   defineComponent,
   computed,
   ref,
-  reactive,
   onMounted,
-  onUpdated,
   nextTick,
-  watch,
-  watchEffect,
   withModifiers,
 } from "vue";
 import {throttle} from "lodash"
 import "./VList.scss";
-type Posotion = { top: number; bottom: number; height: number };
+import {Position} from "../type"
+
+
 export default defineComponent({
   props: {
     show_num: {
@@ -36,11 +34,15 @@ export default defineComponent({
       default: false,
     },
   },
+
   setup(props, { slots }) {
     const container = ref(null);
     const wrapper = ref(null);
+
     const start = ref(0);
     const end = computed(() => start.value + props.show_num);
+
+    
     const pre = computed(() => Math.min(start.value, props.fill_num));
     const next = computed(() =>
       Math.min(props.list.length - end.value, props.fill_num)
@@ -48,10 +50,12 @@ export default defineComponent({
     const current = computed(() =>
       props.list.slice(start.value - pre.value, end.value + next.value)
     );
-    const sum_height = ref(props.list.length * props.height);
-    const offset = ref(0);
 
-    let positions: Array<Posotion> = [];
+    const offset = ref(0);
+    const sum_height = ref(props.list.length * props.height);
+
+    let positions: Array<Position> = [];
+
     function get_start(scroll_top: number): number {
       let res = 0;
       let left = 0;
@@ -70,7 +74,6 @@ export default defineComponent({
       }
       return res;
     }
-
     function set_position() {
       const children = (wrapper.value as unknown as HTMLElement).children;
       const length = children.length;
@@ -92,27 +95,12 @@ export default defineComponent({
       }
 
     }
-
     function resize_handler(){
       nextTick(()=>{
         set_position();
         sum_height.value = positions[positions.length - 1].bottom;
       })
     }
-
-    if (props.uneven) {
-      onMounted(() => {
-        positions = props.list.map((_, index) => {
-          const top = props.height * index;
-          const height = props.height;
-          const bottom = top + height;
-          return { top, bottom, height };
-        });
-        set_position();
-        window.addEventListener('resize',throttle(resize_handler,200,{leading:true,trailing:true}))
-      });
-    }
-
     function scroll_handler(e: Event) {
       const target = e.target as HTMLElement;
       const scroll_top = target.scrollTop;
@@ -130,6 +118,19 @@ export default defineComponent({
         start.value = Math.floor(scroll_top / props.height);
         offset.value = (start.value - pre.value) * props.height;
       }
+    }
+
+    if (props.uneven) {
+      onMounted(() => {
+        positions = props.list.map((_, index) => {
+          const top = props.height * index;
+          const height = props.height;
+          const bottom = top + height;
+          return { top, bottom, height };
+        });
+        set_position();
+        window.addEventListener('resize',throttle(resize_handler,200,{leading:true,trailing:true}))
+      });
     }
 
     return () => (
