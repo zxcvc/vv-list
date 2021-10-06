@@ -6,7 +6,7 @@ import {
   nextTick,
   withModifiers,
 } from "vue";
-import {throttle} from "lodash"
+import {throttle} from "../utils"
 import "./VList.scss";
 import {Position} from "../type"
 
@@ -33,6 +33,11 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    throttle_time:{
+      type:Number,
+      default:0,
+      validator:(val:number)=>val >= 0
+    }
   },
 
   setup(props, { slots }) {
@@ -129,7 +134,7 @@ export default defineComponent({
           return { top, bottom, height };
         });
         set_position();
-        window.addEventListener('resize',throttle(resize_handler,200,{leading:true,trailing:true}))
+        window.addEventListener('resize',throttle(resize_handler,props.throttle_time))
       });
     }
 
@@ -137,7 +142,7 @@ export default defineComponent({
       <div
         class="container"
         ref={container}
-        onScroll={withModifiers(throttle(scroll_handler,66,{leading:true,trailing:true}), ["passive", "once"])}
+        onScroll={withModifiers(throttle(scroll_handler,props.throttle_time), ["passive", "once"])}
         
       >
         <div

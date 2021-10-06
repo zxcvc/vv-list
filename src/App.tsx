@@ -24,6 +24,7 @@ export default defineComponent({
               show_num: 10,
               uneven: true,
               fill_num: 5,
+              throttle_time:67
             }}
           >
             {{
