@@ -142,7 +142,7 @@ export default defineComponent({
       <div
         class="container"
         ref={container}
-        onScroll={withModifiers(throttle(scroll_handler,props.throttle_time), ["passive", "once"])}
+        onScroll={withModifiers(throttle(scroll_handler,props.throttle_time), ["passive"])}
         
       >
         <div
