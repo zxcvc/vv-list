@@ -10,11 +10,12 @@ import {
   watchEffect,
   withModifiers,
 } from "vue";
+import {throttle} from "lodash"
 import "./VList.scss";
 type Posotion = { top: number; bottom: number; height: number };
 export default defineComponent({
   props: {
-    show_nums: {
+    show_num: {
       type: Number,
       required: true,
     },
@@ -39,7 +40,7 @@ export default defineComponent({
     const container = ref(null);
     const wrapper = ref(null);
     const start = ref(0);
-    const end = computed(() => start.value + props.show_nums);
+    const end = computed(() => start.value + props.show_num);
     const pre = computed(() => Math.min(start.value, props.fill_num));
     const next = computed(() =>
       Math.min(props.list.length - end.value, props.fill_num)
@@ -79,16 +80,24 @@ export default defineComponent({
           start.value + i - pre.value,
           props.list.length - 1
         );
-        // const current_index = start.value + i;
         const pre_el = positions[current_index - 1];
         positions[current_index].top = pre_el ? pre_el.bottom : 0;
         positions[current_index].bottom = positions[current_index].top + height;
         positions[current_index].height = height;
       }
-      for (let i = end.value + 1 + next.value; i < props.list.length; ++i) {
+      
+      for (let i = end.value + next.value; i < props.list.length; ++i) {
         positions[i].top = positions[i - 1].bottom;
         positions[i].bottom = positions[i].top + positions[i].height;
       }
+
+    }
+
+    function resize_handler(){
+      nextTick(()=>{
+        set_position();
+        sum_height.value = positions[positions.length - 1].bottom;
+      })
     }
 
     if (props.uneven) {
@@ -100,6 +109,7 @@ export default defineComponent({
           return { top, bottom, height };
         });
         set_position();
+        window.addEventListener('resize',throttle(resize_handler,200,{leading:true,trailing:true}))
       });
     }
 
@@ -108,7 +118,7 @@ export default defineComponent({
       const scroll_top = target.scrollTop;
       if (props.uneven) {
         const _start = get_start(scroll_top);
-        start.value = Math.min(props.list.length - props.show_nums, _start);
+        start.value = Math.min(props.list.length - props.show_num, _start);
         offset.value = positions[start.value - pre.value]
           ? positions[start.value - pre.value].top
           : 0;
@@ -125,9 +135,9 @@ export default defineComponent({
     return () => (
       <div
         class="container"
-        style={{ height: `${props.height * props.show_nums}px` }}
         ref={container}
-        onScroll={withModifiers(scroll_handler, ["passive", "once"])}
+        onScroll={withModifiers(throttle(scroll_handler,66,{leading:true,trailing:true}), ["passive", "once"])}
+        
       >
         <div
           class="wrapper"

@@ -21,7 +21,7 @@ export default defineComponent({
             {...{
               list: list,
               height: 45,
-              show_nums: 10,
+              show_num: 10,
               uneven: true,
               fill_num: 5,
             }}
