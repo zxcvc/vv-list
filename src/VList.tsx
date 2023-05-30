@@ -6,18 +6,18 @@ import {
   nextTick,
   withModifiers,
 } from "vue";
-import {throttle} from "../utils"
 import "./VList.scss";
-import {Position} from "../type"
+import { throttle } from "./utils";
 
+type Position = { top: number; bottom: number; height: number };
 
 export default defineComponent({
   props: {
     show_num: {
       type: Number,
-      required: true,
+      default: 10,
     },
-    height: {
+    item_height: {
       type: Number,
       required: true,
     },
@@ -33,11 +33,11 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    throttle_time:{
-      type:Number,
-      default:0,
-      validator:(val:number)=>val >= 0
-    }
+    throttle_time: {
+      type: Number,
+      default: 0,
+      validator: (val: number) => val >= 0,
+    },
   },
 
   setup(props, { slots }) {
@@ -47,7 +47,6 @@ export default defineComponent({
     const start = ref(0);
     const end = computed(() => start.value + props.show_num);
 
-    
     const pre = computed(() => Math.min(start.value, props.fill_num));
     const next = computed(() =>
       Math.min(props.list.length - end.value, props.fill_num)
@@ -57,7 +56,7 @@ export default defineComponent({
     );
 
     const offset = ref(0);
-    const sum_height = ref(props.list.length * props.height);
+    const sum_height = ref(props.list.length * props.item_height);
 
     let positions: Array<Position> = [];
 
@@ -93,18 +92,17 @@ export default defineComponent({
         positions[current_index].bottom = positions[current_index].top + height;
         positions[current_index].height = height;
       }
-      
+
       for (let i = end.value + next.value; i < props.list.length; ++i) {
         positions[i].top = positions[i - 1].bottom;
         positions[i].bottom = positions[i].top + positions[i].height;
       }
-
     }
-    function resize_handler(){
-      nextTick(()=>{
+    function resize_handler() {
+      nextTick(() => {
         set_position();
         sum_height.value = positions[positions.length - 1].bottom;
-      })
+      });
     }
     function scroll_handler(e: Event) {
       const target = e.target as HTMLElement;
@@ -120,21 +118,24 @@ export default defineComponent({
           sum_height.value = positions[positions.length - 1].bottom;
         });
       } else {
-        start.value = Math.floor(scroll_top / props.height);
-        offset.value = (start.value - pre.value) * props.height;
+        start.value = Math.floor(scroll_top / props.item_height);
+        offset.value = (start.value - pre.value) * props.item_height;
       }
     }
 
     if (props.uneven) {
       onMounted(() => {
         positions = props.list.map((_, index) => {
-          const top = props.height * index;
-          const height = props.height;
+          const top = props.item_height * index;
+          const height = props.item_height;
           const bottom = top + height;
           return { top, bottom, height };
         });
         set_position();
-        window.addEventListener('resize',throttle(resize_handler,props.throttle_time))
+        window.addEventListener(
+          "resize",
+          throttle(resize_handler, props.throttle_time)
+        );
       });
     }
 
@@ -142,8 +143,9 @@ export default defineComponent({
       <div
         class="container"
         ref={container}
-        onScroll={withModifiers(throttle(scroll_handler,props.throttle_time), ["passive"])}
-        
+        onScroll={withModifiers(throttle(scroll_handler, props.throttle_time), [
+          "passive",
+        ])}
       >
         <div
           class="wrapper"
