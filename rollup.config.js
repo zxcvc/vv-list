@@ -23,7 +23,7 @@ export default defineConfig({
         },
     ],
     plugins: [
-        terser(),
+        noderesolve(),
         ts(),
         babel({
             babelHelpers: "inline",
@@ -31,7 +31,7 @@ export default defineConfig({
             extensions: [".tsx", ".ts", ".jsx", ".js"],
         }),
         postcss(),
-        noderesolve(),
+        terser(),
     ],
     external: ["vue"],
 });

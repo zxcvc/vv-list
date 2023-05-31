@@ -5,6 +5,12 @@ import {
   onMounted,
   nextTick,
   withModifiers,
+  render,
+  renderList,
+  renderSlot,
+  Slot,
+  createBlock,
+  Fragment
 } from "vue";
 import "./VList.scss";
 import { throttle } from "./utils";
@@ -31,7 +37,7 @@ export default defineComponent({
     },
     uneven: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     throttle_time: {
       type: Number,
@@ -79,29 +85,34 @@ export default defineComponent({
       return res;
     }
     function set_position() {
-      const children = (wrapper.value as unknown as HTMLElement).children;
+      const wrapper_width = (wrapper.value as unknown as HTMLElement).getBoundingClientRect().width
+      const vitual_el = document.createElement('div')
+      vitual_el.style.width = wrapper_width+'px'
+      const default_slot = slots.default!;
+      let vnode_list = renderList(props.list,default_slot).flat(1)
+      const block = createBlock(Fragment,null,vnode_list)
+      render(block,vitual_el)
+      vitual_el.style.width = wrapper+'px'
+      vitual_el.style.position = 'absolute'
+      vitual_el.style.top = '99999999px'
+      document.body.appendChild(vitual_el)
+
+      const children = vitual_el.children;
       const length = children.length;
       for (let i = 0; i < length; ++i) {
-        const { height } = children[i].getBoundingClientRect();
-        const current_index = Math.min(
-          start.value + i - pre.value,
-          props.list.length - 1
-        );
-        const pre_el = positions[current_index - 1];
-        positions[current_index].top = pre_el ? pre_el.bottom : 0;
-        positions[current_index].bottom = positions[current_index].top + height;
-        positions[current_index].height = height;
+        const {offsetTop:top, offsetHeight:height } = children[i] as HTMLElement
+        const bottom = top+height
+        positions[i] = {top,bottom,height}
       }
-
-      for (let i = end.value + next.value; i < props.list.length; ++i) {
-        positions[i].top = positions[i - 1].bottom;
-        positions[i].bottom = positions[i].top + positions[i].height;
+      if(positions.length !== 0){
+        sum_height.value = positions[positions.length-1]!.bottom
       }
+      vitual_el.remove()
     }
+
     function resize_handler() {
       nextTick(() => {
         set_position();
-        sum_height.value = positions[positions.length - 1].bottom;
       });
     }
     function scroll_handler(e: Event) {
@@ -113,10 +124,6 @@ export default defineComponent({
         offset.value = positions[start.value - pre.value]
           ? positions[start.value - pre.value].top
           : 0;
-        nextTick(() => {
-          set_position();
-          sum_height.value = positions[positions.length - 1].bottom;
-        });
       } else {
         start.value = Math.floor(scroll_top / props.item_height);
         offset.value = (start.value - pre.value) * props.item_height;
