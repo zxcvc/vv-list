@@ -12,7 +12,7 @@ import {
   createBlock,
   Fragment
 } from "vue";
-import "./VList.scss";
+import "./VVList.scss";
 import { throttle } from "./utils";
 
 type Position = { top: number; bottom: number; height: number };

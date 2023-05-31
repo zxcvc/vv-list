@@ -12,7 +12,7 @@ export default defineConfig({
         {
             file: resolve(__dirname, "./dist/index.js"),
             format: "umd",
-            name: "VList",
+            name: "VVList",
             globals: {
                 vue: "Vue",
             },
