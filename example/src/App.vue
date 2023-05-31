@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
-import VVList from '../../dist/index.esm.js'
+import VVList from '../../src/VVList'
 import mock from 'mockjs'
 
 export default defineComponent({
@@ -17,10 +17,10 @@ export default defineComponent({
 
 </script>
 <template>
-  <div style="height: 500px;">
-    <VVList :list="list" :item_height="45" :show_num="10" :uneven="true" :fill_num="5" :throttle_time="67">
+  <div style="height: 600px;">
+    <VVList :list="list" :show_num="10" :uneven="true" :fill_num="5">
       <template v-slot="item">
-        <div :key="item.id" style="border: 2px solid rgb(245, 239, 239);">{{ item.text }}</div>
+        <div :key="item.id">{{ item.text }}</div>
       </template>
     </VVList>
   </div>
